@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SheShield — Digital Safety & Awareness</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --primary:#6c3ce0;
+    --primary-dark:#5a2dc5;
+    --accent:#e040a0;
+    --bg:#f4f0fa;
+    --card:#fff;
+    --text:#2d2240;
+    --muted:#6b6180;
+    --success:#22c55e;
+    --border:#e0d8ef;
+  }
+  html{scroll-behavior:smooth}
+  body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+
+  /* NAV */
+  nav{position:fixed;top:0;width:100%;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);z-index:100;padding:12px 24px;display:flex;align-items:center;justify-content:space-between}
+  .nav-brand{font-size:1.4rem;font-weight:800;color:var(--primary)}
+  .nav-brand span{color:var(--accent)}
+  .nav-links{display:flex;gap:24px;align-items:center}
+  .nav-links a{text-decoration:none;color:var(--muted);font-weight:600;font-size:.9rem;transition:color .2s}
+  .nav-links a:hover{color:var(--primary)}
+  .nav-cta{background:var(--primary);color:#fff!important;padding:8px 20px;border-radius:30px;transition:background .2s}
+  .nav-cta:hover{background:var(--primary-dark)!important;color:#fff!important}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 24px 60px;background:linear-gradient(160deg,#ede6fa 0%,#fce6f3 50%,#e8f4fd 100%);position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(108,60,224,.12),transparent 70%);top:-100px;right:-100px}
+  .hero::after{content:"";position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(224,64,160,.1),transparent 70%);bottom:-80px;left:-80px}
+  .hero-content{max-width:680px;position:relative;z-index:1}
+  .hero-badge{display:inline-block;background:rgba(108,60,224,.12);color:var(--primary);padding:6px 18px;border-radius:30px;font-size:.85rem;font-weight:700;margin-bottom:20px}
+  .hero h1{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:800;line-height:1.15;margin-bottom:16px}
+  .hero h1 span{color:var(--primary)}
+  .hero p{font-size:1.15rem;color:var(--muted);max-width:520px;margin:0 auto 32px}
+  .hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .btn{display:inline-block;padding:14px 32px;border-radius:30px;font-weight:700;text-decoration:none;font-size:1rem;transition:transform .15s,box-shadow .15s;cursor:pointer;border:none}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-outline{background:transparent;color:var(--primary);border:2px solid var(--primary)}
+  .btn-accent{background:var(--accent);color:#fff}
+
+  /* STATS */
+  .stats-bar{display:flex;justify-content:center;gap:48px;padding:40px 24px;flex-wrap:wrap}
+  .stat-item{text-align:center}
+  .stat-num{font-size:2rem;font-weight:800;color:var(--primary)}
+  .stat-label{font-size:.85rem;color:var(--muted);margin-top:2px}
+
+  /* FEATURES */
+  .features{padding:80px 24px;max-width:1000px;margin:0 auto}
+  .section-title{text-align:center;margin-bottom:48px}
+  .section-title h2{font-size:2rem;font-weight:800;margin-bottom:8px}
+  .section-title p{color:var(--muted);max-width:500px;margin:0 auto}
+  .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+  .feature-card{background:var(--card);border-radius:16px;padding:28px;border:1px solid var(--border);transition:transform .2s,box-shadow .2s}
+  .feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(108,60,224,.1)}
+  .feature-icon{font-size:2rem;margin-bottom:12px}
+  .feature-card h3{font-size:1.1rem;margin-bottom:6px}
+  .feature-card p{color:var(--muted);font-size:.92rem}
+
+  /* SURVEY */
+  .survey-section{padding:80px 24px;max-width:760px;margin:0 auto}
+  .survey-section .section-title{margin-bottom:32px}
+  .survey-intro{background:var(--card);border-radius:16px;padding:28px;border:1px solid var(--border);margin-bottom:32px}
+  .survey-intro p{color:var(--muted);font-size:.95rem;margin-bottom:8px}
+  .survey-intro .warn{color:var(--accent);font-weight:600;font-size:.9rem}
+
+  .question{background:var(--card);border-radius:16px;padding:28px;border:1px solid var(--border);margin-bottom:20px;transition:box-shadow .2s}
+  .question:target,.question.highlight{box-shadow:0 0 0 3px rgba(108,60,224,.2)}
+  .q-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
+  .q-num{background:var(--primary);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0}
+  .q-title{font-weight:700;font-size:1.05rem}
+  .q-type{display:inline-block;background:rgba(108,60,224,.08);color:var(--primary);padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:600;margin-left:8px}
+  .required::after{content:" *";color:var(--accent)}
+
+  /* OPTIONS */
+  .options{display:flex;flex-direction:column;gap:8px}
+  .option{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;cursor:pointer;transition:background .15s;border:1px solid transparent}
+  .option:hover{background:rgba(108,60,224,.04);border-color:var(--border)}
+  .option input[type="radio"],.option input[type="checkbox"]{accent-color:var(--primary);width:18px;height:18px;flex-shrink:0}
+  .option label{cursor:pointer;font-size:.95rem;flex:1}
+
+  .checkbox-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+  .checkbox-grid .option{border:1px solid var(--border);border-radius:10px}
+  .checkbox-grid .option:hover{border-color:var(--primary)}
+
+  textarea,.text-input{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:.95rem;resize:vertical;min-height:100px;transition:border-color .2s}
+  textarea:focus,.text-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,60,224,.1)}
+
+  .scale-options{display:flex;gap:8px;flex-wrap:wrap}
+  .scale-options .option{flex:1;min-width:120px;justify-content:center;text-align:center;border:1px solid var(--border);border-radius:10px}
+  .scale-options .option:has(input:checked){background:rgba(108,60,224,.08);border-color:var(--primary)}
+  .scale-options .option label{font-size:.88rem}
+
+  .submit-row{text-align:center;margin-top:32px}
+  .submit-row .btn{padding:16px 48px;font-size:1.1rem}
+
+  /* SUCCESS */
+  .success-msg{display:none;background:var(--card);border-radius:16px;padding:48px;text-align:center;border:2px solid var(--success)}
+  .success-msg.show{display:block}
+  .success-icon{font-size:3rem;margin-bottom:12px}
+  .success-msg h2{color:var(--success);margin-bottom:8px}
+  .success-msg p{color:var(--muted)}
+
+  /* FOOTER */
+  footer{text-align:center;padding:40px 24px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--border)}
+
+  /* MOBILE NAV */
+  .nav-toggle{display:none;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--primary)}
+  @media(max-width:640px){
+    .nav-links{display:none;position:absolute;top:56px;left:0;width:100%;background:#fff;flex-direction:column;padding:20px;gap:16px;border-bottom:1px solid var(--border)}
+    .nav-links.open{display:flex}
+    .nav-toggle{display:block}
+    .hero h1{font-size:1.8rem}
+    .stats-bar{gap:24px}
+    .scale-options{flex-direction:column}
+    .checkbox-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">She<span>Shield</span></div>
+  <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">&#9776;</button>
+  <div class="nav-links">
+    <a href="#home">Home</a>
+    <a href="#features">Features</a>
+    <a href="#survey">Survey</a>
+    <a href="#survey" class="nav-cta">Take the Survey</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-content">
+    <div class="hero-badge">Digital Safety for Young People</div>
+    <h1>Empowering <span>Girls</span> to Navigate the Digital World <span>Safely</span></h1>
+    <p>SheShield helps young people understand online risks, preserve evidence, and find the support they need — all privately and without judgment.</p>
+    <div class="hero-btns">
+      <a href="#survey" class="btn btn-primary">Take the Survey</a>
+      <a href="#features" class="btn btn-outline">Learn More</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-num">70%</div><div class="stat-label">of young people face online risks</div></div>
+  <div class="stat-item"><div class="stat-num">1 in 3</div><div class="stat-label">don't know how to report</div></div>
+  <div class="stat-item"><div class="stat-num">60%</div><div class="stat-label">hesitate to seek help</div></div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-title">
+    <h2>What SheShield Offers</h2>
+    <p>Simple, private tools to help young people stay safe online.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">&#128270;</div>
+      <h3>Scam Checker</h3>
+      <p>Paste a suspicious message and get instant guidance on whether it's a scam or phishing attempt.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#128221;</div>
+      <h3>Step-by-Step Help</h3>
+      <p>Clear, guided walkthroughs for reporting abuse, blocking users, and preserving evidence.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#128274;</div>
+      <h3>100% Private</h3>
+      <p>No name, phone number, or personal data required. Use SheShield completely anonymously.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#128101;</div>
+      <h3>Trusted Contacts</h3>
+      <p>Save trusted people you can reach out to when you face an online safety problem.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#128214;</div>
+      <h3>Safety Learning</h3>
+      <p>Short, easy-to-read resources on privacy settings, password safety, and digital citizenship.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#128681;</div>
+      <h3>Official Support Links</h3>
+      <p>Direct links to platform reporting tools, helplines, and official support channels.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SURVEY -->
+<section class="survey-section" id="survey">
+  <div class="section-title">
+    <h2>Digital Safety & Awareness Survey</h2>
+    <p>Help us understand the challenges young people face online. Your responses are anonymous.</p>
+  </div>
+
+  <div class="survey-intro">
+    <p>We are conducting this anonymous survey to understand the digital safety challenges faced by young people, especially girls. Your responses will help us design a safer and more useful digital-support system.</p>
+    <p class="warn">&#9888; Please do not share your name, phone number, passwords, screenshots, or other private information.</p>
+  </div>
+
+  <form id="surveyForm" novalidate>
+
+    <!-- Q1 -->
+    <div class="question" id="q1">
+      <div class="q-header"><span class="q-num">1</span><span class="q-title required">What is your age group?</span></div>
+      <div class="options">
+        <div class="option"><input type="radio" name="q1" id="q1a" value="Under 15" required><label for="q1a">Under 15</label></div>
+        <div class="option"><input type="radio" name="q1" id="q1b" value="15–17"><label for="q1b">15–17</label></div>
+        <div class="option"><input type="radio" name="q1" id="q1c" value="18–20"><label for="q1c">18–20</label></div>
+        <div class="option"><input type="radio" name="q1" id="q1d" value="21+"><label for="q1d">21+</label></div>
+      </div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question" id="q2">
+      <div class="q-header"><span class="q-num">2</span><span class="q-title required">How often do you use social media or messaging apps?</span></div>
+      <div class="options">
+        <div class="option"><input type="radio" name="q2" id="q2a" value="Less than 1 hour/day" required><label for="q2a">Less than 1 hour/day</label></div>
+        <div class="option"><input type="radio" name="q2" id="q2b" value="1–2 hours/day"><label for="q2b">1–2 hours/day</label></div>
+        <div class="option"><input type="radio" name="q2" id="q2c" value="2–4 hours/day"><label for="q2c">2–4 hours/day</label></div>
+        <div class="option"><input type="radio" name="q2" id="q2d" value="4+ hours/day"><label for="q2d">4+ hours/day</label></div>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question" id="q3">
+      <div class="q-header"><span class="q-num">3</span><span class="q-title required">Which platforms do you use most?</span></div>
+      <div class="checkbox-grid">
+        <div class="option"><input type="checkbox" name="q3" id="q3a" value="Instagram"><label for="q3a">Instagram</label></div>
+        <div class="option"><input type="checkbox" name="q3" id="q3b" value="WhatsApp"><label for="q3b">WhatsApp</label></div>
+        <div class="option"><input type="checkbox" name="q3" id="q3c" value="TikTok"><label for="q3c">TikTok</label></div>
+        <div class="option"><input type="checkbox" name="q3" id="q3d" value="Facebook"><label for="q3d">Facebook</label></div>
+        <div class="option"><input type="checkbox" name="q3" id="q3e" value="Snapchat"><label for="q3e">Snapchat</label></div>
+        <div class="option"><input type="checkbox" name="q3" id="q3f" value="Other"><label for="q3f">Other</label></div>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question" id="q4">
+      <div class="q-header"><span class="q-num">4</span><span class="q-title required">Have you ever received a suspicious or unwanted message online?</span></div>
+      <div class="options">
+        <div class="option"><input type="radio" name="q4" id="q4a" value="Yes" required><label for="q4a">Yes</label></div>
+        <div class="option"><input type="radio" name="q4" id="q4b" value="No"><label for="q4b">No</label></div>
+        <div class="option"><input type="radio" name="q4" id="q4c" value="Not sure"><label for="q4c">Not sure</label></div>
+      </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question" id="q5">
+      <div class="q-header"><span class="q-num">5</span><span class="q-title required">Which online problems do you think young people face most often?</span></div>
+      <div class="checkbox-grid">
+        <div class="option"><input type="checkbox" name="q5" id="q5a" value="Fake accounts / impersonation"><label for="q5a">Fake accounts / impersonation</label></div>
+        <div class="option"><input type="checkbox" name="q5" id="q5b" value="Scams or fake offers"><label for="q5b">Scams or fake offers</label></div>
+        <div class="option"><input type="checkbox" name="q5" id="q5c" value="Unwanted messages"><label for="q5c">Unwanted messages</label></div>
+        <div class="option"><input type="checkbox" name="q5" id="q5d" value="Cyberbullying"><label for="q5d">Cyberbullying</label></div>
+        <div class="option"><input type="checkbox" name="q5" id="q5e" value="Threatening or abusive messages"><label for="q5e">Threatening or abusive messages</label></div>
+        <div class="option"><input type="checkbox" name="q5" id="q5f" value="Edited/misused photos"><label for="q5f">Edited/misused photos</label></div>
+        <div class="option"><input type="checkbox" name="q5" id="q5g" value="Hacked accounts"><label for="q5g">Hacked accounts</label></div>
+        <div class="option"><input type="checkbox" name="q5" id="q5h" value="Privacy/data misuse"><label for="q5h">Privacy/data misuse</label></div>
+        <div class="option"><input type="checkbox" name="q5" id="q5i" value="Other"><label for="q5i">Other</label></div>
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="question" id="q6">
+      <div class="q-header"><span class="q-num">6</span><span class="q-title required">If you received a suspicious message, would you know what to do?</span></div>
+      <div class="options">
+        <div class="option"><input type="radio" name="q6" id="q6a" value="Definitely" required><label for="q6a">Definitely</label></div>
+        <div class="option"><input type="radio" name="q6" id="q6b" value="Probably"><label for="q6b">Probably</label></div>
+        <div class="option"><input type="radio" name="q6" id="q6c" value="Not sure"><label for="q6c">Not sure</label></div>
+        <div class="option"><input type="radio" name="q6" id="q6d" value="Probably not"><label for="q6d">Probably not</label></div>
+        <div class="option"><input type="radio" name="q6" id="q6e" value="No"><label for="q6e">No</label></div>
+      </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="question" id="q7">
+      <div class="q-header"><span class="q-num">7</span><span class="q-title required">Do you know how to properly report an abusive or suspicious account on social media?</span></div>
+      <div class="options">
+        <div class="option"><input type="radio" name="q7" id="q7a" value="Yes" required><label for="q7a">Yes</label></div>
+        <div class="option"><input type="radio" name="q7" id="q7b" value="Somewhat"><label for="q7b">Somewhat</label></div>
+        <div class="option"><input type="radio" name="q7" id="q7c" value="No"><label for="q7c">No</label></div>
+      </div>
+    </div>
+
+    <!-- Q8 -->
+    <div class="question" id="q8">
+      <div class="q-header"><span class="q-num">8</span><span class="q-title required">Do you know what information should NOT be shared online?</span></div>
+      <div class="options">
+        <div class="option"><input type="radio" name="q8" id="q8a" value="Yes, clearly" required><label for="q8a">Yes, clearly</label></div>
+        <div class="option"><input type="radio" name="q8" id="q8b" value="Somewhat"><label for="q8b">Somewhat</label></div>
+        <div class="option"><input type="radio" name="q8" id="q8c" value="Not really"><label for="q8c">Not really</label></div>
+      </div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="question" id="q9">
+      <div class="q-header"><span class="q-num">9</span><span class="q-title required">If you faced an online safety problem, whom would you most likely ask for help?</span></div>
+      <div class="options">
+        <div class="option"><input type="radio" name="q9" id="q9a" value="Parent/guardian" required><label for="q9a">Parent/guardian</label></div>
+        <div class="option"><input type="radio" name="q9" id="q9b" value="Friend"><label for="q9b">Friend</label></div>
+        <div class="option"><input type="radio" name="q9" id="q9c" value="Teacher"><label for="q9c">Teacher</label></div>
+        <div class="option"><input type="radio" name="q9" id="q9d" value="Older sibling/relative"><label for="q9d">Older sibling/relative</label></div>
+        <div class="option"><input type="radio" name="q9" id="q9e" value="Official platform support"><label for="q9e">Official platform support</label></div>
+        <div class="option"><input type="radio" name="q9" id="q9f" value="Nobody"><label for="q9f">Nobody</label></div>
+        <div class="option"><input type="radio" name="q9" id="q9g" value="Other"><label for="q9g">Other</label></div>
+      </div>
+    </div>
+
+    <!-- Q10 -->
+    <div class="question" id="q10">
+      <div class="q-header"><span class="q-num">10</span><span class="q-title required">What makes people hesitate to report online problems?</span></div>
+      <div class="checkbox-grid">
+        <div class="option"><input type="checkbox" name="q10" id="q10a" value="Fear of being judged"><label for="q10a">Fear of being judged</label></div>
+        <div class="option"><input type="checkbox" name="q10" id="q10b" value="Not knowing where to report"><label for="q10b">Not knowing where to report</label></div>
+        <div class="option"><input type="checkbox" name="q10" id="q10c" value="Fear that the situation may get worse"><label for="q10c">Fear that the situation may get worse</label></div>
+        <div class="option"><input type="checkbox" name="q10" id="q10d" value="Embarrassment"><label for="q10d">Embarrassment</label></div>
+        <div class="option"><input type="checkbox" name="q10" id="q10e" value="Lack of evidence/knowledge"><label for="q10e">Lack of evidence/knowledge</label></div>
+        <div class="option"><input type="checkbox" name="q10" id="q10f" value="Not trusting the reporting process"><label for="q10f">Not trusting the reporting process</label></div>
+        <div class="option"><input type="checkbox" name="q10" id="q10g" value="Thinking it's not serious enough"><label for="q10g">Thinking "it's not serious enough"</label></div>
+        <div class="option"><input type="checkbox" name="q10" id="q10h" value="Other"><label for="q10h">Other</label></div>
+      </div>
+    </div>
+
+    <!-- Q11 -->
+    <div class="question" id="q11">
+      <div class="q-header"><span class="q-num">11</span><span class="q-title required">Which features would be most useful in a digital-safety platform like SheShield? <span class="q-type">Choose up to 5</span></span></div>
+      <div class="checkbox-grid" id="q11-options">
+        <div class="option"><input type="checkbox" name="q11" id="q11a" value="Step-by-step help"><label for="q11a">Step-by-step help</label></div>
+        <div class="option"><input type="checkbox" name="q11" id="q11b" value="Scam/suspicious-message awareness checker"><label for="q11b">Scam checker</label></div>
+        <div class="option"><input type="checkbox" name="q11" id="q11c" value="Reporting guidance"><label for="q11c">Reporting guidance</label></div>
+        <div class="option"><input type="checkbox" name="q11" id="q11d" value="Evidence-preservation guidance"><label for="q11d">Evidence preservation</label></div>
+        <div class="option"><input type="checkbox" name="q11" id="q11e" value="Trusted-contact feature"><label for="q11e">Trusted contacts</label></div>
+        <div class="option"><input type="checkbox" name="q11" id="q11f" value="Privacy & security tips"><label for="q11f">Privacy & security tips</label></div>
+        <div class="option"><input type="checkbox" name="q11" id="q11g" value="Cyber-safety learning resources"><label for="q11g">Safety learning resources</label></div>
+        <div class="option"><input type="checkbox" name="q11" id="q11h" value="List of official support/reporting channels"><label for="q11h">Official support channels</label></div>
+        <div class="option"><input type="checkbox" name="q11" id="q11i" value="Anonymous support information"><label for="q11i">Anonymous support info</label></div>
+      </div>
+    </div>
+
+    <!-- Q12 -->
+    <div class="question" id="q12">
+      <div class="q-header"><span class="q-num">12</span><span class="q-title required">How comfortable would you be using a platform that does NOT require your name or phone number?</span></div>
+      <div class="scale-options">
+        <div class="option"><input type="radio" name="q12" id="q12a" value="Very comfortable" required><label for="q12a">Very comfortable</label></div>
+        <div class="option"><input type="radio" name="q12" id="q12b" value="Comfortable"><label for="q12b">Comfortable</label></div>
+        <div class="option"><input type="radio" name="q12" id="q12c" value="Neutral"><label for="q12c">Neutral</label></div>
+        <div class="option"><input type="radio" name="q12" id="q12d" value="Uncomfortable"><label for="q12d">Uncomfortable</label></div>
+        <div class="option"><input type="radio" name="q12" id="q12e" value="Very uncomfortable"><label for="q12e">Very uncomfortable</label></div>
+      </div>
+    </div>
+
+    <!-- Q13 -->
+    <div class="question" id="q13">
+      <div class="q-header"><span class="q-num">13</span><span class="q-title required">In your opinion, what is ONE digital-safety problem that young people face today but people don't talk about enough? <span class="q-type">Open ended</span></span></div>
+      <textarea name="q13" id="q13" placeholder="Type your answer here..." required></textarea>
+    </div>
+
+    <!-- Q14 -->
+    <div class="question" id="q14">
+      <div class="q-header"><span class="q-num">14</span><span class="q-title required">Would you use SheShield if it provided simple, private guidance when you face an online safety problem?</span></div>
+      <div class="scale-options">
+        <div class="option"><input type="radio" name="q14" id="q14a" value="Definitely yes" required><label for="q14a">Definitely yes</label></div>
+        <div class="option"><input type="radio" name="q14" id="q14b" value="Probably yes"><label for="q14b">Probably yes</label></div>
+        <div class="option"><input type="radio" name="q14" id="q14c" value="Maybe"><label for="q14c">Maybe</label></div>
+        <div class="option"><input type="radio" name="q14" id="q14d" value="Probably not"><label for="q14d">Probably not</label></div>
+        <div class="option"><input type="radio" name="q14" id="q14e" value="No"><label for="q14e">No</label></div>
+      </div>
+    </div>
+
+    <!-- Q15 -->
+    <div class="question" id="q15">
+      <div class="q-header"><span class="q-num">15</span><span class="q-title required">What would make SheShield more useful or trustworthy to you? <span class="q-type">Open ended</span></span></div>
+      <textarea name="q15" id="q15" placeholder="Type your answer here..." required></textarea>
+    </div>
+
+    <div class="submit-row">
+      <button type="submit" class="btn btn-primary">Submit Survey</button>
+    </div>
+  </form>
+
+  <div class="success-msg" id="successMsg">
+    <div class="success-icon">&#10003;</div>
+    <h2>Thank You!</h2>
+    <p>Your responses have been recorded. Your feedback will help us build a safer digital world.</p>
+    <br>
+    <a href="#home" class="btn btn-outline" onclick="resetForm()">Back to Home</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>&copy; 2026 SheShield. Built with care for a safer digital world.</p>
+</footer>
+
+<script>
+// Q11: limit to 5 checkboxes
+document.querySelectorAll('#q11-options input[type="checkbox"]').forEach(cb => {
+  cb.addEventListener('change', () => {
+    const checked = document.querySelectorAll('#q11-options input[type="checkbox"]:checked');
+    if (checked.length > 5) {
+      cb.checked = false;
+      cb.parentElement.style.animation = 'shake .3s';
+      setTimeout(() => cb.parentElement.style.animation = '', 300);
+    }
+  });
+});
+
+// Form submit
+document.getElementById('surveyForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  // Validate required radio groups
+  const radios = ['q1','q2','q4','q6','q7','q8','q9','q12','q14'];
+  let valid = true;
+  radios.forEach(name => {
+    if (!document.querySelector('input[name="'+name+'"]:checked')) {
+      valid = false;
+      document.getElementById(name).classList.add('highlight');
+    } else {
+      document.getElementById(name).classList.remove('highlight');
+    }
+  });
+
+  // Validate checkboxes (q3, q5, q10 at least 1 checked)
+  ['q3','q5','q10'].forEach(name => {
+    if (!document.querySelector('input[name="'+name+'"]:checked')) {
+      valid = false;
+      document.getElementById(name).classList.add('highlight');
+    } else {
+      document.getElementById(name).classList.remove('highlight');
+    }
+  });
+
+  // Validate Q11 at least 1
+  if (!document.querySelector('input[name="q11"]:checked')) {
+    valid = false;
+    document.getElementById('q11').classList.add('highlight');
+  } else {
+    document.getElementById('q11').classList.remove('highlight');
+  }
+
+  // Validate textareas
+  ['q13','q15'].forEach(id => {
+    if (!document.getElementById(id).value.trim()) {
+      valid = false;
+      document.getElementById(id).closest('.question').classList.add('highlight');
+    } else {
+      document.getElementById(id).closest('.question').classList.remove('highlight');
+    }
+  });
+
+  if (!valid) {
+    const first = document.querySelector('.highlight');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  // Collect data
+  const data = {};
+  const fd = new FormData(this);
+  for (const [key, val] of fd.entries()) {
+    if (data[key]) {
+      if (Array.isArray(data[key])) data[key].push(val);
+      else data[key] = [data[key], val];
+    } else {
+      data[key] = val;
+    }
+  }
+  console.log('Survey responses:', data);
+
+  // Show success
+  this.style.display = 'none';
+  document.querySelector('.survey-intro').style.display = 'none';
+  document.getElementById('successMsg').classList.add('show');
+  document.getElementById('successMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
+function resetForm() {
+  const form = document.getElementById('surveyForm');
+  form.reset();
+  form.style.display = '';
+  document.querySelector('.survey-intro').style.display = '';
+  document.getElementById('successMsg').classList.remove('show');
+  document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+}
+
+// Smooth scroll for nav links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', () => {
+    document.querySelector('.nav-links').classList.remove('open');
+  });
+});
+</script>
+
+<style>
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-4px)}
+    75%{transform:translateX(4px)}
+  }
+</style>
+</body>
+</html>
