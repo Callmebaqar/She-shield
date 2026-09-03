@@ -10,6 +10,7 @@ const appNav = [
   { to: '/alerts', label: 'Alerts' },
   { to: '/reports', label: 'Reports' },
   { to: '/resources', label: 'Resources' },
+  { to: '/survey', label: 'Survey' },
 ];
 
 function PublicHeader() {
@@ -23,6 +24,7 @@ function PublicHeader() {
         <nav className="flex items-center gap-4 text-sm font-medium">
           <Link to="/" className="text-gray-600 dark:text-brand-200 hover:text-brand-700">Home</Link>
           <Link to="/resources" className="text-gray-600 dark:text-brand-200 hover:text-brand-700">Resources</Link>
+          <Link to="/survey" className="text-gray-600 dark:text-brand-200 hover:text-brand-700">Survey</Link>
           <Link to="/sos" className="hidden sm:block text-red-600 font-bold hover:text-red-700">Emergency</Link>
           <button onClick={toggle} aria-label="Toggle theme" className="text-xl">{theme === 'dark' ? '☀️' : '🌙'}</button>
           <Link to="/login" className="text-brand-700 dark:text-brand-300 font-semibold">Log in</Link>

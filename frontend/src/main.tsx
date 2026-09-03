@@ -19,6 +19,7 @@ import ContactsPage from './pages/Contacts';
 import AlertsPage from './pages/Alerts';
 import ReportsPage from './pages/Reports';
 import ResourcesPage from './pages/Resources';
+import SurveyPage from './pages/Survey';
 import ProfilePage from './pages/Profile';
 import SettingsPage from './pages/Settings';
 import AdminPage from './pages/Admin';
@@ -34,6 +35,7 @@ function App() {
             <Route element={<PublicLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/resources" element={<ResourcesPage />} />
+              <Route path="/survey" element={<SurveyPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />

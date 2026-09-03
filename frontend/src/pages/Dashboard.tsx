@@ -33,6 +33,7 @@ export default function DashboardPage() {
     { to: '/contacts', icon: '👤', title: 'Contacts', color: 'bg-brand-600 text-white' },
     { to: '/reports', icon: '📢', title: 'Report', color: 'bg-indigo-600 text-white' },
     { to: '/resources', icon: '📚', title: 'Resources', color: 'bg-green-600 text-white' },
+    { to: '/survey', icon: '📋', title: 'Survey', color: 'bg-purple-600 text-white' },
   ];
 
   return (
