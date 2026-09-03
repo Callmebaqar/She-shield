@@ -72,9 +72,13 @@ function AppShell() {
           <div className="flex items-center gap-3">
             <button onClick={toggle} aria-label="Toggle theme" className="text-xl">{theme === 'dark' ? '☀️' : '🌙'}</button>
             <Link to="/profile" className="hidden sm:flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-brand-200">
-              <span className="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center text-sm font-bold">
-                {user?.name?.charAt(0).toUpperCase()}
-              </span>
+              {user?.profilePhoto ? (
+                <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}/uploads/${user.profilePhoto}`} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
+              ) : (
+                <span className="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center text-sm font-bold">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </span>
+              )}
             </Link>
             <Link to="/sos" className="bg-red-600 text-white text-sm px-3 py-2 rounded-xl font-bold hover:bg-red-700">SOS</Link>
             <button onClick={logout} className="text-sm text-gray-500 dark:text-brand-300 hover:text-red-600 font-medium">Logout</button>

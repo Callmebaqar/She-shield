@@ -4,7 +4,7 @@ import { useAuth } from '../context/auth';
 import { Button, Card, Field, inputClasses } from '../components/ui';
 import { ApiError } from '../lib/api';
 
-const passwordHint = 'At least 8 characters, with a letter and a number.';
+const passwordHint = 'At least 8 characters with uppercase, lowercase, and a number.';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -24,7 +24,7 @@ export default function RegisterPage() {
     const errs: Record<string, string> = {};
     if (form.name.trim().length < 2) errs.name = 'Please enter your name';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid email';
-    if (form.password.length < 8 || !/[A-Za-z]/.test(form.password) || !/[0-9]/.test(form.password)) errs.password = passwordHint;
+    if (form.password.length < 8 || !/[a-z]/.test(form.password) || !/[A-Z]/.test(form.password) || !/[0-9]/.test(form.password)) errs.password = passwordHint;
     if (form.password !== form.confirmPassword) errs.confirmPassword = 'Passwords do not match';
     setErrors(errs);
     setServerError('');

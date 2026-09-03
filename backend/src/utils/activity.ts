@@ -1,4 +1,3 @@
-import type { AuthRequest } from '../middleware/auth';
 import { prisma } from '../utils/prisma';
 
 export async function logActivity(

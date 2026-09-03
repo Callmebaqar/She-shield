@@ -38,9 +38,13 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="w-14 h-14 rounded-full bg-brand-600 text-white flex items-center justify-center text-2xl font-bold">
-          {user?.name?.charAt(0).toUpperCase()}
-        </div>
+        {user?.profilePhoto ? (
+          <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}/uploads/${user.profilePhoto}`} alt={user.name} className="w-14 h-14 rounded-full object-cover" />
+        ) : (
+          <div className="w-14 h-14 rounded-full bg-brand-600 text-white flex items-center justify-center text-2xl font-bold">
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
+        )}
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back, {user?.name?.split(' ')[0]}</h1>
           <p className="text-sm text-gray-500 dark:text-brand-300">Your safety is our priority.</p>
@@ -133,7 +137,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {loading && <div className="flex justify-center py-6"><Spinner /></div>}
+      {loading && data.contacts.length === 0 && data.alerts.length === 0 && data.reports.length === 0 && <div className="flex justify-center py-6"><Spinner /></div>}
     </div>
   );
 }

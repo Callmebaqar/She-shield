@@ -1,4 +1,6 @@
 import express from 'express';
+import path from 'path';
+import fs from 'fs';
 import cors from 'cors';
 import helmet from 'helmet';
 import { config } from './utils/config';
@@ -46,7 +48,28 @@ app.use('/api/reports', reportsRouter);
 // Admin (role-guarded)
 app.use('/api/admin', adminRouter);
 
-// Fallback / SPA-aware catch-all for API is handled by notFoundHandler only.
+// In production, serve the built React frontend (../frontend/dist) from the same
+// origin so the app and its API share one URL (handy for a single free host like Render).
+const frontendDist = path.resolve(__dirname, '../../frontend/dist');
+if ((process.env.NODE_ENV || '').trim().toLowerCase() === 'production' && fs.existsSync(frontendDist)) {
+  app.use(async (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    const file = path.join(frontendDist, req.path);
+    if (req.path === '/' || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
+      return res.sendFile(path.join(frontendDist, 'index.html'));
+    }
+    return next();
+  });
+  app.use(express.static(frontendDist));
+}
+
+// Serve uploaded files (profile photos)
+const uploadsDir = path.resolve(__dirname, '../uploads');
+if (fs.existsSync(uploadsDir)) {
+  app.use('/uploads', express.static(uploadsDir));
+}
+
+// Unknown /api routes -> JSON 404; everything else handled above.
 app.use(notFoundHandler);
 app.use(errorHandler);
 

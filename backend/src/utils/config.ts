@@ -19,7 +19,5 @@ export const config = {
   frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:5173',
   emailProvider: process.env.EMAIL_PROVIDER ?? 'dev',
   resendApiKey: process.env.RESEND_API_KEY ?? '',
-  argonMemory: Number(process.env.ARCON2_MEMORY ?? 65536),
-  argonTime: Number(process.env.ARCON2_TIME ?? 3),
-  argonParallelism: Number(process.env.ARCON2_PARALLELISM ?? 1),
+
 };

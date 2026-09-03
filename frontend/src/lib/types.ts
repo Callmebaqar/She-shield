@@ -4,6 +4,8 @@ export interface User {
   email: string;
   role: 'USER' | 'ADMIN';
   phone?: string | null;
+  physicalDescription?: string | null;
+  profilePhoto?: string | null;
   emailVerified: boolean;
   isActive?: boolean;
   createdAt?: string;
@@ -57,6 +59,14 @@ export interface AppConfig {
   whatsappNumber: string;
   reportCategories: { value: string; label: string }[];
   alertTypes: string[];
+}
+
+export interface LocationUpdate {
+  id: string;
+  alertId: string;
+  latitude: number;
+  longitude: number;
+  timestamp: string;
 }
 
 export interface AdminStats {

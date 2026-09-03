@@ -1,5 +1,5 @@
 // SheShield database schema
-// Dev provider: SQLite (local)
+// Production provider: PostgreSQL (used on VPS).
 // For local development without PostgreSQL, use scripts/use-sqlite.js which swaps
 // to the SQLite dev schema. Enum-like fields use String so the schema is portable
 // across both connectors; values are validated in the application layer (zod).
@@ -9,8 +9,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")  // file:./dev.db in .env
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // String fields with allowed values:
@@ -26,6 +26,8 @@ model User {
   passwordHash         String
   role                 String              @default("USER")
   phone                String?
+  physicalDescription  String?
+  profilePhoto         String?
   isActive             Boolean             @default(true)
   emailVerified        Boolean             @default(false)
   createdAt            DateTime            @default(now())
@@ -68,6 +70,7 @@ model EmergencyAlert {
   resolvedBy      String?
 
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locationUpdates LocationUpdate[]
 
   @@index([userId])
   @@index([status])
@@ -133,3 +136,14 @@ model ActivityLog {
   @@index([createdAt])
 }
 
+model LocationUpdate {
+  id          String   @id @default(cuid())
+  alertId     String
+  latitude    Float
+  longitude   Float
+  timestamp   DateTime @default(now())
+
+  alert       EmergencyAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId])
+}

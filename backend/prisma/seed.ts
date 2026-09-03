@@ -15,6 +15,8 @@ async function main() {
       passwordHash: hash,
       role: 'ADMIN',
       emailVerified: true,
+      physicalDescription: null,
+      profilePhoto: null,
     },
   });
 
@@ -27,6 +29,8 @@ async function main() {
       passwordHash: hash,
       role: 'USER',
       emailVerified: true,
+      physicalDescription: null,
+      profilePhoto: null,
     },
   });
 

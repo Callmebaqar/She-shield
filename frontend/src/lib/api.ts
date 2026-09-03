@@ -79,7 +79,18 @@ export const api = {
 
   // Users
   updateMe: (data: unknown) => request<{ user: unknown }>('/users/me', { method: 'PATCH', body: data, auth: true }),
-  deleteMe: () => request<{ success: boolean }>('/users/me', { method: 'DELETE', auth: true }),
+  deleteMe: (password: string) => request<{ success: boolean }>('/users/me', { method: 'DELETE', body: { password }, auth: true }),
+  uploadPhoto: (file: File) => {
+    const formData = new FormData();
+    formData.append('photo', file);
+    const token = getToken();
+    return fetch(`${BASE}/users/me/photo`, {
+      method: 'POST',
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      body: formData,
+    }).then(r => r.json());
+  },
+  deletePhoto: () => request<{ success: boolean }>('/users/me/photo', { method: 'DELETE', auth: true }),
 
   // Emergency contacts
   getContacts: () => request<{ contacts: unknown[] }>('/emergency-contacts', { auth: true }),
@@ -97,6 +108,13 @@ export const api = {
   getReports: () => request<{ reports: unknown[] }>('/reports', { auth: true }),
   createReport: (data: unknown) => request<{ report: unknown }>('/reports', { method: 'POST', body: data, auth: true }),
 
+  // Contact form
+  submitContact: (data: unknown) => request<{ message: string }>('/config/contact', { method: 'POST', body: data }),
+
+  // Alert locations
+  addAlertLocation: (alertId: string, data: unknown) => request<{ location: unknown }>(`/alerts/${alertId}/locations`, { method: 'POST', body: data, auth: true }),
+  getAlertLocations: (alertId: string) => request<{ locations: unknown[] }>(`/alerts/${alertId}/locations`, { auth: true }),
+
   // Admin
   adminStats: () => request<{ stats: unknown }>('/admin/stats', { auth: true }),
   adminUsers: () => request<{ users: unknown[] }>('/admin/users', { auth: true }),
@@ -104,6 +122,7 @@ export const api = {
   adminAlerts: () => request<{ alerts: unknown[] }>('/admin/alerts', { auth: true }),
   adminUpdateUser: (id: string, data: unknown) => request<{ user: unknown }>(`/admin/users/${id}`, { method: 'PATCH', body: data, auth: true }),
   adminUpdateReport: (id: string, data: unknown) => request<{ report: unknown }>(`/admin/reports/${id}`, { method: 'PATCH', body: data, auth: true }),
+  adminActivity: (page?: number) => request<{ logs: unknown[]; total: number }>(`/admin/activity?page=${page || 1}`, { auth: true }),
 };
 
 export type AppConfigLike = import('./types').AppConfig;

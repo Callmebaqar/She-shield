@@ -37,15 +37,21 @@ router.get('/stats', asyncHandler(async (req: AuthRequest, res: Response) => {
 
 // GET /api/admin/users
 router.get('/users', asyncHandler(async (req: AuthRequest, res: Response) => {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true, name: true, email: true, role: true, phone: true,
-      isActive: true, createdAt: true,
-      _count: { select: { emergencyAlerts: true, safetyReports: true } },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-  res.json({ users });
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const skip = (page - 1) * limit;
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      select: {
+        id: true, name: true, email: true, role: true, phone: true,
+        isActive: true, createdAt: true, physicalDescription: true, profilePhoto: true,
+        _count: { select: { emergencyAlerts: true, safetyReports: true } },
+      },
+      orderBy: { createdAt: 'desc' }, skip, take: limit,
+    }),
+    prisma.user.count(),
+  ]);
+  res.json({ users, total, page, limit });
 }));
 
 // PATCH /api/admin/users/:id — toggle active / change role
@@ -58,6 +64,13 @@ router.patch('/users/:id', asyncHandler(async (req: AuthRequest, res: Response) 
 
   const target = await prisma.user.findUnique({ where: { id: req.params.id } });
   if (!target) throw new AppError('User not found', 404);
+
+  if (target.id === req.userId && data.role && data.role !== 'ADMIN') {
+    throw new AppError('You cannot change your own admin role', 400);
+  }
+  if (target.id === req.userId && data.isActive === false) {
+    throw new AppError('You cannot disable your own account from admin panel', 400);
+  }
 
   const updated = await prisma.user.update({
     where: { id: target.id },
@@ -72,20 +85,47 @@ router.patch('/users/:id', asyncHandler(async (req: AuthRequest, res: Response) 
 
 // GET /api/admin/reports
 router.get('/reports', asyncHandler(async (req: AuthRequest, res: Response) => {
-  const reports = await prisma.safetyReport.findMany({
-    orderBy: { createdAt: 'desc' },
-    include: { user: { select: { id: true, name: true, email: true } } },
-  });
-  res.json({ reports });
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const skip = (page - 1) * limit;
+  const [reports, total] = await Promise.all([
+    prisma.safetyReport.findMany({
+      orderBy: { createdAt: 'desc' }, skip, take: limit,
+      include: { user: { select: { id: true, name: true, email: true } } },
+    }),
+    prisma.safetyReport.count(),
+  ]);
+  res.json({ reports, total, page, limit });
 }));
 
 // GET /api/admin/alerts
 router.get('/alerts', asyncHandler(async (req: AuthRequest, res: Response) => {
-  const alerts = await prisma.emergencyAlert.findMany({
-    orderBy: { activatedAt: 'desc' },
-    include: { user: { select: { id: true, name: true, email: true } } },
-  });
-  res.json({ alerts });
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const skip = (page - 1) * limit;
+  const [alerts, total] = await Promise.all([
+    prisma.emergencyAlert.findMany({
+      orderBy: { activatedAt: 'desc' }, skip, take: limit,
+      include: { user: { select: { id: true, name: true, email: true } } },
+    }),
+    prisma.emergencyAlert.count(),
+  ]);
+  res.json({ alerts, total, page, limit });
+}));
+
+// GET /api/admin/activity
+router.get('/activity', asyncHandler(async (req: AuthRequest, res: Response) => {
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+  const skip = (page - 1) * limit;
+  const [logs, total] = await Promise.all([
+    prisma.activityLog.findMany({
+      orderBy: { createdAt: 'desc' }, skip, take: limit,
+      include: { user: { select: { name: true, email: true } } },
+    }),
+    prisma.activityLog.count(),
+  ]);
+  res.json({ logs, total, page, limit });
 }));
 
 // PATCH /api/admin/reports/:id — update report status
@@ -108,4 +148,3 @@ router.patch('/reports/:id', asyncHandler(async (req: AuthRequest, res: Response
 }));
 
 export const adminRouter = router;
-

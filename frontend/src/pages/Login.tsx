@@ -47,7 +47,7 @@ export default function LoginPage() {
           <Link to="/forgot-password" className="text-brand-600 dark:text-brand-300 hover:underline">Forgot password?</Link>
           <Link to="/register" className="text-brand-600 dark:text-brand-300 hover:underline">Create account</Link>
         </div>
-        <p className="mt-6 text-xs text-gray-400 text-center">Demo: demo@sheshield.app / Admin@1234 · Admin: admin@sheshield.app / Admin@1234</p>
+
       </Card>
     </div>
   );

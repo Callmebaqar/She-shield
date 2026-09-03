@@ -1,4 +1,8 @@
-// Switches the active Prisma schema back to the PostgreSQL production schema.
+// Switches the ACTIVE Prisma schema to the PostgreSQL production schema.
+// This only swaps the schema file — it does NOT modify .env, so the real
+// DATABASE_URL (from Render/VPS env or your .env) is preserved.
+// After switching, ensure DATABASE_URL points at your Postgres, then run:
+//   prisma db push (or prisma migrate deploy) && prisma generate
 const fs = require('fs');
 const path = require('path');
 
@@ -7,21 +11,10 @@ const mainSchema = path.join(prismaDir, 'schema.prisma');
 const postgresSchema = path.join(prismaDir, 'schema.postgres.prisma');
 
 if (!fs.existsSync(postgresSchema)) {
-  console.log('No schema.postgres.prisma backup found. Leaving schema.prisma as-is.');
+  console.log('No schema.postgres.prisma found. Leaving schema.prisma as-is.');
   process.exit(1);
 }
 
 fs.copyFileSync(postgresSchema, mainSchema);
 console.log('Active Prisma schema -> PostgreSQL (schema.prisma)');
-
-const envPath = path.join(__dirname, '..', '.env');
-if (fs.existsSync(envPath)) {
-  let env = fs.readFileSync(envPath, 'utf8');
-  env = env.replace(
-    /^DATABASE_URL=.*$/m,
-    'DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/sheshield?schema=public"'
-  );
-  fs.writeFileSync(envPath, env);
-}
-
-console.log('Done. Set real DATABASE_URL in .env, then run: prisma migrate deploy && prisma generate');
+console.log('Ensure DATABASE_URL points at your Postgres, then run: prisma db push && prisma generate');

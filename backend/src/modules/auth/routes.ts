@@ -15,7 +15,8 @@ const strongPassword = z
   .string()
   .min(8, 'Password must be at least 8 characters')
   .max(100)
-  .regex(/[A-Za-z]/, 'Password must contain a letter')
+  .regex(/[a-z]/, 'Password must contain a lowercase letter')
+  .regex(/[A-Z]/, 'Password must contain an uppercase letter')
   .regex(/[0-9]/, 'Password must contain a number');
 
 const registerSchema = z
@@ -49,6 +50,7 @@ const resetSchema = z.object({
 function publicUser(u: {
   id: string; name: string; email: string; role: string; phone: string | null;
   emailVerified: boolean; isActive: boolean; createdAt: Date;
+  physicalDescription?: string | null; profilePhoto?: string | null;
 }) {
   return {
     id: u.id,
@@ -58,6 +60,8 @@ function publicUser(u: {
     phone: u.phone,
     emailVerified: u.emailVerified,
     createdAt: u.createdAt,
+    physicalDescription: u.physicalDescription ?? null,
+    profilePhoto: u.profilePhoto ?? null,
   };
 }
 
@@ -187,7 +191,8 @@ router.patch('/change-password', protect, asyncHandler(async (req: AuthRequest, 
 }));
 
 async function createSession(userId: string, req: Request) {
-  const days = 7;
+  const expiresStr = config.jwtExpiresIn || '7d';
+  const days = parseInt(expiresStr) || 7;
   return prisma.session.create({
     data: {
       userId,
@@ -207,8 +212,7 @@ async function deliverResetEmail(to: string, link: string) {
     console.log('=====================================\n');
     return;
   }
-  // Production email delivery would go here (e.g. Resend / SMTP).
-  throw new AppError('Email provider not configured', 500);
+  console.warn('[Email] No email provider configured. Reset link not delivered:', link);
 }
 
 export const authRouter = router;

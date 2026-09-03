@@ -26,6 +26,8 @@ model User {
   passwordHash         String
   role                 String              @default("USER")
   phone                String?
+  physicalDescription  String?
+  profilePhoto         String?
   isActive             Boolean             @default(true)
   emailVerified        Boolean             @default(false)
   createdAt            DateTime            @default(now())
@@ -68,6 +70,7 @@ model EmergencyAlert {
   resolvedBy      String?
 
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locationUpdates LocationUpdate[]
 
   @@index([userId])
   @@index([status])
@@ -131,5 +134,17 @@ model ActivityLog {
 
   @@index([userId])
   @@index([createdAt])
+}
+
+model LocationUpdate {
+  id          String   @id @default(cuid())
+  alertId     String
+  latitude    Float
+  longitude   Float
+  timestamp   DateTime @default(now())
+
+  alert       EmergencyAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId])
 }
 

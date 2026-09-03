@@ -1,16 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/auth';
 import { STAY_SAFE, HOW_IT_WORKS, SAFETY_RESOURCES } from '../data/content';
 import { whatsappLink } from '../lib/geo';
 import { Card, Button, Field, inputClasses } from '../components/ui';
-
-const DEFAULT_NUMBERS = [
-  { label: 'Emergency Rescue (1122)', number: '1122', type: 'phone' },
-  { label: 'Police (Pakistan)', number: '15', type: 'phone' },
-  { label: 'Women Helpline (1098)', number: '1098', type: 'phone' },
-  { label: 'FIA Cyber Crime', number: '991', type: 'phone' },
-];
+import { api } from '../lib/api';
+import type { EmergencyNumber } from '../lib/types';
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -60,13 +55,24 @@ function Hero() {
 }
 
 function EmergencyNumbers() {
+  const [numbers, setNumbers] = useState<EmergencyNumber[]>([
+    { label: 'Emergency Rescue (1122)', number: '1122', type: 'phone' },
+    { label: 'Police (Pakistan)', number: '15', type: 'phone' },
+    { label: 'Women Helpline (1098)', number: '1098', type: 'phone' },
+    { label: 'FIA Cyber Crime', number: '991', type: 'phone' },
+  ]);
+  useEffect(() => {
+    api.getConfig().then(res => {
+      if (res.emergencyNumbers?.length) setNumbers(res.emergencyNumbers.slice(0, 4));
+    }).catch(() => {});
+  }, []);
   return (
     <section className="max-w-6xl mx-auto px-4 py-10">
       <Card className="p-6 border-red-200 dark:border-red-900">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">🚨 Emergency Numbers (Pakistan)</h2>
         <p className="text-sm text-gray-500 dark:text-brand-300 mb-4">Tap any number to call it directly.</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {DEFAULT_NUMBERS.map((n) => (
+          {numbers.map((n) => (
             <a key={n.label} href={`tel:${n.number}`} className="flex flex-col items-center justify-center p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 hover:bg-red-100 transition-colors">
               <span className="text-2xl mb-1">📞</span>
               <span className="font-extrabold text-red-700 dark:text-red-400 text-lg">{n.number}</span>
@@ -163,17 +169,22 @@ function ContactForm() {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.name || !form.message) {
-      setError('Please fill in your name and message.');
-      return;
+    if (!form.name) { setError('Please enter your name.'); return; }
+    if (!form.message || form.message.trim().length < 10) { setError('Please write a message of at least 10 characters.'); return; }
+    setLoading(true);
+    setError('');
+    try {
+      await api.submitContact(form);
+      setSent(true);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to send feedback');
+    } finally {
+      setLoading(false);
     }
-    const subject = encodeURIComponent(`SheShield feedback from ${form.name}`);
-    const body = encodeURIComponent(`${form.message}\n\nFrom: ${form.email || 'anonymous'}`);
-    window.open(`mailto:feedback@sheshield.app?subject=${subject}&body=${body}`, '_self');
-    setSent(true);
   }
 
   return (
@@ -182,7 +193,7 @@ function ContactForm() {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Contact / Feedback</h2>
         <p className="text-sm text-gray-500 dark:text-brand-300 mb-6">Share your feedback to help us improve SheShield. Email is optional.</p>
         {sent ? (
-          <p className="text-green-600 font-medium">Your email app has been opened. Thank you for your feedback! 💜</p>
+          <p className="text-green-600 font-medium">Thank you for your feedback! 💜</p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
@@ -197,7 +208,7 @@ function ContactForm() {
               <textarea id="cf-msg" rows={4} className={inputClasses} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Your feedback..." />
             </Field>
             {error && <p className="text-sm text-red-600">{error}</p>}
-            <Button type="submit" className="w-full">Send Feedback</Button>
+            <Button type="submit" loading={loading} className="w-full">Send Feedback</Button>
           </form>
         )}
       </Card>

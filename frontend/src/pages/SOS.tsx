@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { api } from '../lib/api';
 import { useCurrentLocation, whatsappLink } from '../lib/geo';
 import { useAuth } from '../context/auth';
@@ -16,6 +16,37 @@ export default function SosPage() {
   const [confirming, setConfirming] = useState(false);
   const [alert, setAlert] = useState<EmergencyAlert | null>(null);
   const [error, setError] = useState('');
+  const [tracking, setTracking] = useState(false);
+  const watchRef = useRef<number | null>(null);
+
+  function startTracking() {
+    if (!alert) return;
+    setTracking(true);
+    watchRef.current = navigator.geolocation.watchPosition(
+      async (pos) => {
+        try {
+          await api.addAlertLocation(alert.id, {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          });
+        } catch { /* ignore location update errors */ }
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+  }
+
+  function stopTracking() {
+    setTracking(false);
+    if (watchRef.current !== null) {
+      navigator.geolocation.clearWatch(watchRef.current);
+      watchRef.current = null;
+    }
+  }
+
+  useEffect(() => {
+    return () => { if (watchRef.current !== null) navigator.geolocation.clearWatch(watchRef.current); };
+  }, []);
 
   // Load any existing active alert on mount
   useEffect(() => {
@@ -133,6 +164,17 @@ export default function SosPage() {
             {location.status === 'denied' && (
               <p className="mt-3 text-xs text-amber-600">Your location was not shared because permission was denied.</p>
             )}
+            <div className="mt-3 p-3 rounded-xl bg-gray-50 dark:bg-brand-800/50">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700 dark:text-brand-200">📍 Live Location Tracking</span>
+                {tracking ? (
+                  <button onClick={stopTracking} className="text-xs px-3 py-1 rounded-lg bg-red-100 text-red-700 hover:bg-red-200">Stop Tracking</button>
+                ) : (
+                  <button onClick={startTracking} className="text-xs px-3 py-1 rounded-lg bg-green-100 text-green-700 hover:bg-green-200">Start Tracking</button>
+                )}
+              </div>
+              {tracking && <p className="text-xs text-green-600 mt-1">Your location is being shared every 30 seconds.</p>}
+            </div>
             <Button variant="secondary" className="mt-4" onClick={resolveAlert}>I'm safe — resolve alert</Button>
           </div>
         )}
@@ -155,4 +197,3 @@ export default function SosPage() {
     </div>
   );
 }
-

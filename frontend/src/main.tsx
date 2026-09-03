@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
 import { AuthProvider } from './context/auth';
 import { ThemeProvider } from './context/theme';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
 
 import AppShell, { PublicLayout } from './components/Layout';
@@ -67,4 +68,8 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')!).render(<App />);
+createRoot(document.getElementById('root')!).render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
+);

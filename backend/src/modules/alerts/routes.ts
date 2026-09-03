@@ -60,6 +60,40 @@ router.get('/active', asyncHandler(async (req: AuthRequest, res: Response) => {
   res.json({ alert: alert ?? null });
 }));
 
+const locationSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+});
+
+// POST /api/alerts/:id/locations — record a live location update during an active alert
+router.post('/:id/locations', asyncHandler(async (req: AuthRequest, res: Response) => {
+  const data = locationSchema.parse(req.body);
+  const alert = await prisma.emergencyAlert.findFirst({
+    where: { id: req.params.id, userId: req.userId },
+  });
+  if (!alert) throw new AppError('Alert not found', 404);
+  if (!['ACTIVATING', 'ACTIVE'].includes(alert.status)) {
+    throw new AppError('This alert is not active', 400);
+  }
+  const location = await prisma.locationUpdate.create({
+    data: { alertId: alert.id, latitude: data.latitude, longitude: data.longitude },
+  });
+  res.status(201).json({ location });
+}));
+
+// GET /api/alerts/:id/locations — get the location history for an alert
+router.get('/:id/locations', asyncHandler(async (req: AuthRequest, res: Response) => {
+  const alert = await prisma.emergencyAlert.findFirst({
+    where: { id: req.params.id, userId: req.userId },
+  });
+  if (!alert) throw new AppError('Alert not found', 404);
+  const locations = await prisma.locationUpdate.findMany({
+    where: { alertId: alert.id },
+    orderBy: { timestamp: 'asc' },
+  });
+  res.json({ locations });
+}));
+
 // GET /api/alerts/:id
 router.get('/:id', asyncHandler(async (req: AuthRequest, res: Response) => {
   const alert = await prisma.emergencyAlert.findFirst({

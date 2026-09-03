@@ -13,6 +13,7 @@ export default function ContactsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -55,7 +56,6 @@ export default function ContactsPage() {
   }
 
   async function del(id: string) {
-    if (!confirm('Delete this emergency contact?')) return;
     try {
       await api.deleteContact(id);
       setContacts((c) => c.filter((x) => x.id !== id));
@@ -111,7 +111,7 @@ export default function ContactsPage() {
               <a href={c.phone && c.phone.replace(/[^0-9]/g, '') ? `https://wa.me/${c.phone.replace(/[^0-9]/g, '')}` : '#'} target="_blank" rel="noopener noreferrer"><Button size="sm" variant="secondary">WhatsApp</Button></a>
               <Button size="sm" variant="ghost" onClick={() => openEdit(c)}>Edit</Button>
               {!c.isPrimary && <Button size="sm" variant="ghost" onClick={() => setPrimary(c.id)}>Set primary</Button>}
-              <Button size="sm" variant="danger" onClick={() => del(c.id)}>Delete</Button>
+              <Button size="sm" variant="danger" onClick={() => setDeleteConfirmId(c.id)}>Delete</Button>
             </div>
           </Card>
         ))}
@@ -138,6 +138,14 @@ export default function ContactsPage() {
             <Button variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
             <Button onClick={save} loading={saving} disabled={!form.name || form.phone.length < 7}>Save</Button>
           </div>
+        </div>
+      </Modal>
+
+      <Modal open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="Delete Contact">
+        <p className="text-sm text-gray-600 dark:text-brand-200 mb-4">Are you sure you want to delete this emergency contact? This cannot be undone.</p>
+        <div className="flex gap-2 justify-end">
+          <Button variant="ghost" onClick={() => setDeleteConfirmId(null)}>Cancel</Button>
+          <Button variant="danger" onClick={() => { if (deleteConfirmId) { del(deleteConfirmId); setDeleteConfirmId(null); } }}>Delete</Button>
         </div>
       </Modal>
     </div>
