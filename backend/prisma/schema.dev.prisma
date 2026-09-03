@@ -1,0 +1,135 @@
+// SheShield database schema
+// Dev provider: SQLite (local)
+// For local development without PostgreSQL, use scripts/use-sqlite.js which swaps
+// to the SQLite dev schema. Enum-like fields use String so the schema is portable
+// across both connectors; values are validated in the application layer (zod).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")  // file:./dev.db in .env
+}
+
+// String fields with allowed values:
+//   role: "USER" | "ADMIN"
+//   alert.status: "READY" | "ACTIVATING" | "ACTIVE" | "RESOLVED" | "CANCELLED" | "FAILED"
+//   report.category: "UNSAFE_AREA" | "HARASSMENT" | "SUSPICIOUS_ACTIVITY" | "ROAD_TRAVEL_SAFETY" | "OTHER"
+//   report.status: "SUBMITTED" | "UNDER_REVIEW" | "RESOLVED" | "REJECTED"
+
+model User {
+  id                   String              @id @default(cuid())
+  name                 String
+  email                String              @unique
+  passwordHash         String
+  role                 String              @default("USER")
+  phone                String?
+  isActive             Boolean             @default(true)
+  emailVerified        Boolean             @default(false)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  emergencyContacts    EmergencyContact[]
+  emergencyAlerts      EmergencyAlert[]
+  safetyReports        SafetyReport[]
+  activityLogs         ActivityLog[]
+  passwordResetTokens  PasswordResetToken[]
+  sessions             Session[]
+}
+
+model EmergencyContact {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  phone        String
+  relation     String?
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model EmergencyAlert {
+  id              String      @id @default(cuid())
+  userId          String
+  status          String      @default("READY")
+  alertType       String      @default("SOS")
+  message         String?
+  latitude        Float?
+  longitude       Float?
+  locationLabel   String?
+  activatedAt     DateTime    @default(now())
+  resolvedAt      DateTime?
+  resolvedBy      String?
+
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model SafetyReport {
+  id            String    @id @default(cuid())
+  userId        String
+  category      String
+  description   String
+  latitude      Float?
+  longitude     Float?
+  locationLabel String?
+  occurredAt    DateTime? @default(now())
+  status        String    @default("SUBMITTED")
+  adminNote     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
